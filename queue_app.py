@@ -32,9 +32,18 @@ def clean_element():
         listbox.delete(selected)
         update_info()
 
+
 def clean_list():
     listbox.delete(0, tk.END)
     update_info()
+
+def update_info():
+    elements = listbox.get(0, tk.END)
+    amount_var.set(len(elements))
+    first_var.set(elements[0] if elements else "")
+    last_var.set(elements[-1] if elements else "")
+    current_list_var.set(f"[{', '.join(elements)}]")
+
 
 # Clean Element Verification
 def clean_list():
@@ -86,7 +95,9 @@ tk.Button(root, text="CLEAN LIST", bg="red", fg="white", command=clean_list).pla
 
 
 # Current List
-tk.Label(root, text="CURRENT LIST:").place(x=100, y=150)
+tk.Label(root, text="CURRENT LIST:", bg="#000000", fg="white").place(x=100, y=170)
+current_list_var = tk.StringVar()
+tk.Entry(root, textvariable=current_list_var, width=40, bg="gray20", fg="white", insertbackground="white").place(x=100, y=190)
 listbox = tk.Listbox(root, width=40, height=8)
 listbox.place(x=100, y=170)
 
@@ -103,8 +114,7 @@ tk.Label(root, text="LAST ELEMENT:").place(x=370, y=250) #Last Element
 last_var = tk.StringVar()
 tk.Entry(root, textvariable=last_var).place(x=470, y=250) #Square
 
-# Close Windows
-tk.Button(root, text="X", bg="lightcoral", command=root.quit).place(x=570, y=0)
+
 
 
 root.mainloop()
