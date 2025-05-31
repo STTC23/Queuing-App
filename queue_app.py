@@ -4,9 +4,11 @@ from tkinter import PhotoImage #Using images
 from tkinter import ttk #Windows GUi options
 from sympy.parsing.sympy_parser import parse_expr #Logic maths library
 from sympy.logic.boolalg import BooleanFunction #Booleans logic
+from PIL import Image, ImageTk
 import itertools #iterations library
 import re #chars library
 import matplotlib #Vector library
+
 
 
 # Funciones de los botones
@@ -34,15 +36,25 @@ def clean_list():
     listbox.delete(0, tk.END)
     update_info()
 
+# Clean Element Verification
+def clean_list():
+    confirm = messagebox.askyesno("Confirmation", "Are you sure you want to clear the list?")
+    if confirm:
+        listbox.delete(0, tk.END)
+        update_info()
+
 def update_info():
     elements = listbox.get(0, tk.END)
     amount_var.set(len(elements)) #Select amount of element
     first_var.set(elements[0] if elements else "") #First element always in 0
     last_var.set(elements[-1] if elements else "") #Last element always in -1 cause is the alst
 
+
+
 # Principal Window
 root = tk.Tk()
 root.title("Lógica de Programación I - Simulador de Encolamiento") #Title window
+root.iconbitmap(r"C:\Users\juan_\Downloads\Proyecto Final - Lógica\image\Berry_principal.ico") #Icon
 root.geometry("600x350")
 
 bg_image = tk.PhotoImage(file=r"C:\Users\juan_\Downloads\Proyecto Final - Lógica\image\background.png")
@@ -53,6 +65,15 @@ img_width = bg_image.width()
 img_height = bg_image.height()
 root.geometry(f"{img_width}x{img_height}")
 
+
+# Starwberry Image
+original_img = Image.open(r"C:\Users\juan_\Downloads\Proyecto Final - Lógica\image\Strawberrry.png")
+resized_img = original_img.resize((80, 60), Image.Resampling.LANCZOS)
+strawberry_img = ImageTk.PhotoImage(resized_img)
+strawberry_label = tk.Label(root, image=strawberry_img, borderwidth=0, highlightthickness=0)
+strawberry_label.place(x=250, y=0)  
+
+
 # Text font
 entry = tk.Entry(root, font=("Arial", 12), width=40)
 entry.place(x=100, y=50)
@@ -62,6 +83,7 @@ tk.Button(root, text="INSERT", bg="green", fg="black", command=insert_element).p
 tk.Button(root, text="RECORD", bg="blue", fg="white", command=record_element).place(x=200, y=100)
 tk.Button(root, text="CLEAN ELEMENT", bg="lightcoral", command=clean_element).place(x=300, y=100)
 tk.Button(root, text="CLEAN LIST", bg="red", fg="white", command=clean_list).place(x=450, y=100)
+
 
 # Current List
 tk.Label(root, text="CURRENT LIST:").place(x=100, y=150)
@@ -83,5 +105,6 @@ tk.Entry(root, textvariable=last_var).place(x=470, y=250) #Square
 
 # Close Windows
 tk.Button(root, text="X", bg="lightcoral", command=root.quit).place(x=570, y=0)
+
 
 root.mainloop()
