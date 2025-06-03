@@ -1,6 +1,5 @@
-import tkinter as tk
-from tkinter import messagebox
-from tkinter import ttk
+import tkinter as tk #Windows library
+from tkinter import messagebox #Verification and confirmation tool
 from sympy.parsing.sympy_parser import parse_expr
 from sympy.logic.boolalg import BooleanFunction
 from PIL import Image, ImageTk
@@ -46,7 +45,7 @@ def validate_entry_input(value):
     if selected_type == "entero": 
         return value == "" or value.isdigit()
     elif selected_type == "float":
-        return re.match(r'^-?\d*(\.\d*)?$', value) is not None
+        return re.match(r'^-?\d*(\.\d*)?$', value) is not None #The program will be avoid to write those symbols
     return True
 
 #------------------------------------------------ PRINCIPAL WINDOW ----------------------------------------------------------#
@@ -80,30 +79,37 @@ def launch_main_window():
     #--- Button Functions ---#
     def insert_element():
         element = entry.get()
-        if is_valid_input(element):
-            listbox.insert(tk.END, element)
-            entry.delete(0, tk.END)
-            update_info()
-        else:
-            messagebox.showerror("Invalid input", "The input does not match the selected type.")
+        if element:
+            if is_valid_input(element):
+                listbox.insert(tk.END, element)
+                entry.delete(0, tk.END)
+                update_info()
+                history.append(f"The following element has been inserted {element}")
+            else:
+                messagebox.showerror("Invalid input", f"The valor '{element}' isn't right '{selected_type}'")
+    
 
     def record_element():
-        selected = listbox.curselection()
-        if selected:
-            entry.delete(0, tk.END)
-            entry.insert(0, listbox.get(selected))
+        if history:
+            historial_texto = "\n".join(history)
+        else:
+            historial_texto = "There is not register actions"
+        messagebox.showinfo("Record: ", historial_texto)
 
     def clean_element():
         selected = listbox.curselection()
         if selected:
+            removed = listbox.get(selected)
             listbox.delete(selected)
             update_info()
+            history.append(f"The following element has been removed {removed}")
 
     def clean_list():
         confirm = messagebox.askyesno("Confirmation", "Are you sure you want to clear the list?")
         if confirm:
             listbox.delete(0, tk.END)
             update_info()
+            history.append("The list has been cleaned")
 
     def update_info():
         elements = listbox.get(0, tk.END)
@@ -135,6 +141,8 @@ def launch_main_window():
     amount_var = tk.StringVar()
     first_var = tk.StringVar()
     last_var = tk.StringVar()
+    history = []
+
 
     tk.Label(root, text="ELEMENT AMOUNT:").place(x=350, y=170)
     tk.Entry(root, textvariable=amount_var).place(x=470, y=170)
@@ -162,7 +170,7 @@ def show_selector_window():
     select_window.iconbitmap(r"C:\Users\juan_\Downloads\Proyecto Final - Lógica\image\Berry_principal.ico")
     select_window.geometry("250x300")
 
-    tk.Label(select_window, text="Selecciona el tipo de elemento").pack(pady=10)
+    tk.Label(select_window, text="Please, select a type of element").pack(pady=10)
 
     tipos = ["entero", "float", "vector", "boolean", "dict", "char", "real", "everything"]
     for t in tipos:
