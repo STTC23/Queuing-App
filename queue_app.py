@@ -1,6 +1,11 @@
 import tkinter as tk #Windows library
 from tkinter import messagebox #Verification and confirmation tool
 from PIL import Image, ImageTk #Images tools
+import queue #Importing FiFO Python queue
+import re #Chains functions
+
+# FIFO Queue logic
+cola = queue.Queue()  # FIFO queue to store the inserted elements
 
 selected_type = None #Save the select type on the selector window
 
@@ -45,13 +50,12 @@ def validate_entry_input(value):
 
 #------------------------------------------------ PRINCIPAL WINDOW ----------------------------------------------------------#
 def launch_main_window():
-    # Principal Creation
-    global entry
+    global entry, current_list_var
+
     root = tk.Tk() #Creates the principal program
     root.title("Lógica de Programación I - Simulador de Encolamiento") #Principal windows title
     root.iconbitmap(r"C:\\Users\\juan_\\Downloads\\Proyecto Final - Lógica\\image\\Berry_principal.ico") #principal windows icon
 
-    #Background configuration
     bg_image = tk.PhotoImage(file=r"C:\\Users\\juan_\\Downloads\\Proyecto Final - Lógica\\image\\background.png") #image localitation
     background_label = tk.Label(root, image=bg_image) #Location 
     background_label.place(x=0, y=0, relwidth=1, relheight=1) #Position
@@ -59,17 +63,22 @@ def launch_main_window():
     img_height = bg_image.height() #hegiht size
     root.geometry(f"{img_width}x{img_height}") # Final image size
 
-    #Strawberry imagen configuration
     original_img = Image.open(r"C:\\Users\\juan_\\Downloads\\Proyecto Final - Lógica\\image\\Strawberrry.png") #Image localitation
     resized_img = original_img.resize((80, 60), Image.Resampling.LANCZOS) #Resized the image
     strawberry_img = ImageTk.PhotoImage(resized_img) # resized image
     strawberry_label = tk.Label(root, image=strawberry_img, borderwidth=0, highlightthickness=0) #Size configuration
     strawberry_label.place(x=250, y=0) #Position
 
-    # Value validation
     vcmd = root.register(validate_entry_input) #Values every type of element
     entry = tk.Entry(root, font=("Arial", 12), width=40, validate="key", validatecommand=(vcmd, '%P'))
     entry.place(x=100, y=50)
+
+    #--- Variables ---#
+    amount_var = tk.StringVar() #Amount variable and gives tk.Stringvar the value
+    first_var = tk.StringVar() #Amount frist var
+    last_var = tk.StringVar() #Amount last var
+    history = []
+    current_list_var = tk.StringVar()
 
     #--- Button Functions ---#
     def insert_element():
@@ -78,11 +87,11 @@ def launch_main_window():
             if is_valid_input(element):
                 listbox.insert(tk.END, element) #Insert Definiction
                 entry.delete(0, tk.END)
+                cola.put(element)  # Add to FIFO queue
                 update_info() #Update save every actions in every function
                 history.append(f"The following element has been inserted {element}") #Record fucntion
             else:
                 messagebox.showerror("Invalid input", f"The valor '{element}' isn't right '{selected_type}'") #Error message
-    
 
     def record_element():
         if history:
@@ -103,6 +112,8 @@ def launch_main_window():
         confirm = messagebox.askyesno("Confirmation", "Are you sure you want to clear the list?") #Confirmation function
         if confirm:
             listbox.delete(0, tk.END) #Delecte every element in the list
+            with cola.mutex: # Queue access
+                cola.queue.clear()  # Clear FIFO queue
             update_info()
             history.append("The list has been cleaned")
 
@@ -114,29 +125,22 @@ def launch_main_window():
         current_list_var.set(f"[{', '.join(elements)}]") #Show the elements on the list
     
     def back_to_selector(current_window):
-        current_window.destroy()  # Cierra la ventana principal
-        show_selector_window()    # Vuelve a abrir la de selección
-    
-    #--- Buttons ---#
+        current_window.destroy()  # Close main window
+        show_selector_window()    # Show selector window
 
+    #--- Buttons ---#
     tk.Button(root, text="INSERT", bg="green", fg="black", command=insert_element).place(x=100, y=100) #Insert Button
     tk.Button(root, text="RECORD", bg="blue", fg="white", command=record_element).place(x=200, y=100) #Record Button
     tk.Button(root, text="CLEAN ELEMENT", bg="lightcoral", command=clean_element).place(x=300, y=100) #Clean Element button
     tk.Button(root, text="CLEAN LIST", bg="red", fg="white", command=clean_list).place(x=450, y=100) #Clean list button
-    tk.Button(root, text="BACK TO SELECTOR", bg="orange", command=lambda: back_to_selector(root)).place(x=100, y=300) #Back to selector button
+    tk.Button(root, text="BACK TO SELECTOR", bg="orange", command=lambda: back_to_selector(root)).place(x=100, y=20) #Back to selector button
 
-    tk.Label(root, text="CURRENT LIST:", bg="#000000", fg="white").place(x=100, y=170) #Current list label
-    tk.Entry(root, textvariable=current_list_var, width=40, bg="gray20", fg="white", insertbackground="white").place(x=100, y=190)
+    #--- Labels and Entry fields ---#
+    tk.Label(root, text="CURRENT LIST:", bg="#000000", fg="white").place(x=100, y=140) #Current list label
+    tk.Entry(root, textvariable=current_list_var, width=40, bg="gray20", fg="white", insertbackground="white").place(x=100, y=160)
+
     listbox = tk.Listbox(root, width=40, height=8)
-    listbox.place(x=100, y=170)
-
-    #--- Variables ---#
-    amount_var = tk.StringVar() #Amount variable and gives tk.Stringvar the value
-    first_var = tk.StringVar() #Amount frist var
-    last_var = tk.StringVar() #Amount last var
-    history = []
-    current_list_var = tk.StringVar()
-
+    listbox.place(x=100, y=190)
 
     tk.Label(root, text="ELEMENT AMOUNT:").place(x=350, y=170) #Element amoutn label
     tk.Entry(root, textvariable=amount_var).place(x=470, y=170)
@@ -145,9 +149,7 @@ def launch_main_window():
     tk.Label(root, text="LAST ELEMENT:").place(x=370, y=250) #Last element label
     tk.Entry(root, textvariable=last_var).place(x=470, y=250)
 
-
     root.mainloop() #Keep the windows open
-
 
 #---------------------------------------------------------------------------------------------------------------------#
 # Selector Window Function
@@ -172,7 +174,5 @@ def show_selector_window():
         tk.Button(select_window, text=t, width=15, command=lambda tipo=t: select_type(tipo)).pack(pady=3)
 
     select_window.mainloop() #Keeps select windows open
-show_selector_window() #Go tothe selector when push the back to selector option
 
-#---------------------------------------------------------------------------------------------------------------------#
-    
+show_selector_window() #Go tothe selector when push the back to selector option
