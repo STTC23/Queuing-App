@@ -3,6 +3,11 @@ from tkinter import messagebox #Verification and confirmation tool
 from PIL import Image, ImageTk #Images tools
 import queue #Importing FiFO Python queue
 import re #Chains functions
+import os
+
+# --- Global path configuration ---
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # Script base directory
+IMAGE_DIR = os.path.join(BASE_DIR, "image")  # Image folder path
 
 # FIFO Queue logic
 cola = queue.Queue()  # FIFO queue to store the inserted elements
@@ -54,16 +59,16 @@ def launch_main_window():
 
     root = tk.Tk() #Creates the principal program
     root.title("Lógica de Programación I - Simulador de Encolamiento") #Principal windows title
-    root.iconbitmap(r"C:\\Users\\juan_\\Downloads\\Proyecto Final - Lógica\\image\\Berry_principal.ico") #principal windows icon
+    root.iconbitmap(os.path.join(IMAGE_DIR, "Berry_principal.ico"))   #principal windows icon
 
-    bg_image = tk.PhotoImage(file=r"C:\\Users\\juan_\\Downloads\\Proyecto Final - Lógica\\image\\background.png") #image localitation
+    bg_image = tk.PhotoImage(file=os.path.join(IMAGE_DIR, "background.png")) #image localitation
     background_label = tk.Label(root, image=bg_image) #Location 
     background_label.place(x=0, y=0, relwidth=1, relheight=1) #Position
     img_width = bg_image.width() #width size
     img_height = bg_image.height() #hegiht size
     root.geometry(f"{img_width}x{img_height}") # Final image size
 
-    original_img = Image.open(r"C:\\Users\\juan_\\Downloads\\Proyecto Final - Lógica\\image\\Strawberrry.png") #Image localitation
+    original_img = Image.open(os.path.join(IMAGE_DIR, "Strawberrry.png")) #Image localitation
     resized_img = original_img.resize((80, 60), Image.Resampling.LANCZOS) #Resized the image
     strawberry_img = ImageTk.PhotoImage(resized_img) # resized image
     strawberry_label = tk.Label(root, image=strawberry_img, borderwidth=0, highlightthickness=0) #Size configuration
@@ -164,7 +169,7 @@ def show_selector_window():
     global select_window
     select_window = tk.Tk()
     select_window.title("Selector")
-    select_window.iconbitmap(r"C:\Users\juan_\Downloads\Proyecto Final - Lógica\image\Berry_principal.ico")
+    select_window.iconbitmap(os.path.join(IMAGE_DIR, "Berry_principal.ico"))
     select_window.geometry("250x300")
 
     tk.Label(select_window, text="Please, select a type of element").pack(pady=10)
