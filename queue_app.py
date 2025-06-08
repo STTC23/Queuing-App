@@ -3,11 +3,16 @@ from tkinter import messagebox #Verification and confirmation tool
 from PIL import Image, ImageTk #Images tools
 import queue #Importing FiFO Python queue
 import re #Chains functions
-import os
+import sys #Import .exe application
+import os #Global Files 
 
-# --- Global path configuration ---
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # Script base directory
-IMAGE_DIR = os.path.join(BASE_DIR, "image")  # Image folder path
+# Global Files location 
+if getattr(sys, 'frozen', False):
+    BASE_DIR = sys._MEIPASS  
+else:
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__)) #New images structure
+
+IMAGE_DIR = os.path.join(BASE_DIR, "image") 
 
 # FIFO Queue logic
 cola = queue.Queue()  # FIFO queue to store the inserted elements
